@@ -1,0 +1,10 @@
+{
+    "slope": 8.6215,
+    "intercept": 11.8079,
+    "metrics": {
+        "r2_score": 0.9793,
+        "mse": 11.5686,
+        "mae": 2.9023,
+        "total_samples": 150
+    }
+}
