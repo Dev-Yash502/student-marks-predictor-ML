@@ -1,16 +1,98 @@
-# React + Vite
+# PredictMark AI: Student Marks Prediction using Supervised Machine Learning
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+This project is a Supervised Machine Learning application designed to predict a student's final exam marks (percentage) based on their average daily study hours. The core of this project lies in training, evaluating, and visualizing a **Simple Linear Regression** model. A modern user interface built using **React** serves as an interactive wrapper to demonstrate the model's predictions in real-time.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🧠 Machine Learning Model & Mathematics
 
-## React Compiler
+The system utilizes **Supervised Machine Learning**, specifically **Simple Linear Regression**, to establish a relationship between a single independent feature (Study Hours) and a dependent continuous label (Marks Obtained).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### The Linear Regression Equation
+The model fits a straight line through the data points using the algebraic equation:
 
-## Expanding the Oxlint configuration
+$$Y = mX + C$$
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+Where:
+*   **$Y$ (Dependent Variable)**: Predicted Marks (clamped between $0\%$ and $100\%$).
+*   **$X$ (Independent Variable)**: Daily Study Hours (ranging from $0.0$ to $10.0$ hours).
+*   **$m$ (Slope/Coefficient)**: The rate of change in marks per study hour.
+*   **$C$ (Intercept)**: The baseline marks predicted for a student studying $0$ hours.
+
+### Fitted Parameters
+After training on the dataset, the Scikit-Learn algorithm converged on the following coefficients:
+*   **Slope ($m$) = `8.6215`**: Every single hour of daily study increases the predicted final score by approximately **8.62%**.
+*   **Intercept ($C$) = `11.8079`**: A student studying 0 hours per day is predicted to score a baseline of **11.81%**.
+
+Thus, the final prediction formula is:
+$$\text{Projected Marks} = (8.6215 \times \text{Study Hours}) + 11.8079$$
+
+---
+
+## 📊 Dataset & Preprocessing
+
+The model is trained on a dataset of **150 student records** (`student_marks_data.csv`) that simulates a realistic academic distribution.
+
+*   **Feature ($X$)**: Average daily study hours, generated using a uniform distribution between $1.0$ and $10.0$ hours.
+*   **Target ($Y$)**: Final marks, modeled as a linear function of study hours with added **Gaussian (Normal) noise** ($\mu = 0, \sigma = 5$). This noise represents real-world variables such as exam stress, prior preparation, and sleep quality, preventing the model from fitting a perfect, unrealistic line.
+*   **Boundary Constraints**: The marks are capped between $0\%$ and $100\%$ to ensure realistic results.
+
+---
+
+## ⚙️ Training, Testing & Evaluation Pipeline
+
+The machine learning pipeline is structured as follows:
+
+1.  **Data Split**: The dataset is split into **80% Training Data** (120 records) to teach the model, and **20% Testing Data** (30 records) to evaluate its accuracy.
+2.  **Model Fitting**: Scikit-Learn's `LinearRegression` class is fitted to the training set using the Ordinary Least Squares (OLS) method.
+3.  **Metrics Evaluation**:
+    *   **R-squared ($R^2$) Score = `0.9793`**: The trained model explains **97.93%** of the variance in student marks. This indicates a high goodness-of-fit.
+    *   **Mean Absolute Error (MAE) = `2.9023` marks**: On average, the model's predictions deviate from actual scores by only **2.9%**.
+    *   **Mean Squared Error (MSE) = `11.5686`**: Penalizes larger errors, showing consistent performance across all ranges.
+
+---
+
+## 📈 Visualizing the Model
+
+The training script generates a high-resolution plot (`regression_plot.png`) using Matplotlib:
+*   **Cyan Data Points**: Represents the 120 samples used for training.
+*   **Magenta Data Points**: Represents the 30 samples held out for testing.
+*   **Gold Regression Line**: Shows the line of best fit representing the equation $Y = 8.6215X + 11.8079$.
+
+---
+
+## 💻 React Interactive UI Wrapper
+
+To make the machine learning model accessible, a frontend wrapper was built using **React** (scaffolded with Vite). 
+*   It loads the model coefficients (`model_parameters.json`) generated by the Python script.
+*   It performs real-time client-side calculation using the regression equation.
+*   It includes a **What-If Grade Advisor** that calculates the exact additional study hours a student needs to reach the next grade tier (e.g., passing grade, or outstanding A-grade).
+*   The UI is styled using a minimalist-glassmorphic theme with animated background light rays.
+
+---
+
+## 🚀 How to Run the ML Project
+
+### Prerequisites
+Make sure you have Python 3.x and Node.js installed. Install Python libraries:
+```bash
+pip install numpy pandas scikit-learn matplotlib
+```
+
+### 1. Run the ML Pipeline (Python)
+To generate the dataset, train the model, evaluate metrics, and export the assets, run:
+```bash
+python train_predict.py
+```
+This generates:
+*   `public/student_marks_data.csv` (Dataset)
+*   `public/model_parameters.json` (Coefficients)
+*   `public/regression_plot.png` (Fitted line plot)
+
+### 2. Launch the React Web Dashboard
+To install frontend dependencies and start the interactive interface, run:
+```bash
+npm install
+npm run dev
+```
+Open **`http://localhost:5173/`** in your browser to test the interactive ML predictor!
